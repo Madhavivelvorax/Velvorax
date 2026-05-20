@@ -91,12 +91,6 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/accounts', accountRoutes);
 
-// Catch-all for undefined API routes
-app.use('/api/*', (req, res) => {
-    console.warn(`404 API Route: ${req.method} ${req.originalUrl}`);
-    res.status(404).json({ msg: `API path not found: ${req.originalUrl}` });
-});
-
 // Serve static files from the frontend folder
 app.use(express.static(path.join(__dirname, '../frontend'), { extensions: ['html'] }));
 
