@@ -704,6 +704,10 @@ function openEditModal(id) {
       });
       if (!res.ok) return;
       allEmployees = await res.json();
+      if (!Array.isArray(allEmployees)) {
+        console.error("Employees API did not return an array:", allEmployees);
+        return;
+      }
 
       const selects = [document.getElementById('leadAssignedTo'), document.getElementById('filterAssignedTo')];
       selects.forEach(select => {

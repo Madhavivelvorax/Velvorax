@@ -3,7 +3,17 @@ const router = express.Router();
 const StandardUser = require('../models/StandardUser');
 const User = require('../models/User');
 const Company = require('../models/Company');
+const auth = require('../middleware/auth');
 const { sendApprovalNotification } = require('../utils/emailService');
+
+// Protect all routes - Super Admin only
+router.use(auth);
+router.use((req, res, next) => {
+    if (req.user.role !== 'super_admin') {
+        return res.status(403).json({ msg: "Forbidden: Super Admin access required" });
+    }
+    next();
+});
 
 // GET all users (or filter by status)
 router.get('/users', async (req, res) => {

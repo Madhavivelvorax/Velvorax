@@ -29,10 +29,10 @@ router.get('/', auth, async (req, res) => {
     } else {
       // Staff/StandardUser sees only their own or assigned tickets
       if (!companyId) return res.status(403).json({ msg: 'Unauthorized: No company associated' });
-      query.companyId = companyId;
+      query.companyId = new mongoose.Types.ObjectId(companyId);
       query.$or = [
-        { assignedTo: userId },
-        { createdBy: userId }
+        { assignedTo: new mongoose.Types.ObjectId(userId) },
+        { createdBy: new mongoose.Types.ObjectId(userId) }
       ];
     }
 

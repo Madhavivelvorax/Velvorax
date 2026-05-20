@@ -225,7 +225,14 @@
         fetch(`${CONFIG.API_BASE_URL}/api/tasks`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
-      if (!lRes.ok || !tRes.ok) throw new Error("Failed to fetch data");
+      if (!lRes.ok) {
+        console.error("Leads Fetch Failed:", lRes.status, await lRes.text());
+      }
+      if (!tRes.ok) {
+        console.error("Tasks Fetch Failed:", tRes.status, await tRes.text());
+      }
+
+      if (!lRes.ok || !tRes.ok) throw new Error(`Failed to fetch data (Leads: ${lRes.status}, Tasks: ${tRes.status})`);
 
       const leads = await lRes.json();
       const tasks = await tRes.json();

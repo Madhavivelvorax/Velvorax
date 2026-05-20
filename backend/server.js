@@ -59,10 +59,16 @@ if (!process.env.JWT_SECRET) {
 }
 
 // Middleware
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+});
+
 app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+    origin: true, // Allow the origin of the request
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+    credentials: true
 }));
 
 // Increase limit for logo uploads (Base64 strings can be large)
@@ -84,6 +90,12 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/accounts', accountRoutes);
+
+// Catch-all for undefined API routes
+app.use('/api/*', (req, res) => {
+    console.warn(`404 API Route: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ msg: `API path not found: ${req.originalUrl}` });
+});
 
 // Serve static files from the frontend folder
 app.use(express.static(path.join(__dirname, '../frontend'), { extensions: ['html'] }));
