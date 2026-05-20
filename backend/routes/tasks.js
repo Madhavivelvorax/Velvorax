@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const { Task, User, Lead, StandardUser } = require('../models');
 
@@ -56,17 +57,9 @@ router.get('/', auth, async (req, res) => {
 
     if (role === 'super_admin') {
       // Sees all
-    } else if (role === 'admin' || role === 'client') {
-      if (!companyId) return res.status(403).json({ msg: 'Unauthorized' });
-      query.companyId = companyId;
     } else {
-      // Staff sees only their own or assigned tasks
       if (!companyId) return res.status(403).json({ msg: 'Unauthorized' });
       query.companyId = new mongoose.Types.ObjectId(companyId);
-      query.$or = [
-        { assignedTo: new mongoose.Types.ObjectId(userId) },
-        { assignedBy: new mongoose.Types.ObjectId(userId) }
-      ];
     }
 
     const tasks = await Task.find(query)
