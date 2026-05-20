@@ -28,21 +28,21 @@ router.get('/', auth, async (req, res) => {
     const userId = req.user?.id;
     const companyId = req.user?.companyId;
 
-    console.log('GET LEADS REQUEST:', { userId, role, companyId });
+    console.log('GET LEADS DEBUG:', { userId, role, companyId });
 
     let query = {};
 
     if (role === 'super_admin') {
-      // Super Admin: sees everything
+      console.log('Role is super_admin');
     } else if (role === 'admin' || role === 'client' || role === 'staff' || role === 'StandardUser') {
-      // In-company users: see all leads in their company
+      console.log('Role is in-company:', role);
       if (!companyId) {
         console.warn('GET LEADS: No companyId for user', userId);
         return res.status(403).json({ message: 'Unauthorized: No Company ID' });
       }
       query.companyId = new mongoose.Types.ObjectId(companyId);
     } else {
-      // Fallback
+      console.log('Role is other/staff (restricted):', role);
       if (!companyId) return res.status(403).json({ message: 'Unauthorized' });
       query.companyId = new mongoose.Types.ObjectId(companyId);
       query.$or = [
@@ -51,7 +51,7 @@ router.get('/', auth, async (req, res) => {
       ];
     }
 
-    console.log('GET LEADS QUERY:', JSON.stringify(query));
+    console.log('FINAL LEADS QUERY:', JSON.stringify(query));
 
     // ============ FILTER SAFE MERGE ============
     if (status) query.status = status;
@@ -144,9 +144,11 @@ router.post('/', auth, async (req, res) => {
       ...req.body,
       leadId,
       createdBy: new mongoose.Types.ObjectId(userId),
+      createdByModel: req.user.type || 'User',
       assignedTo: req.body.assignedTo
         ? new mongoose.Types.ObjectId(req.body.assignedTo)
         : undefined,
+      assignedToModel: req.body.assignedToModel || 'User',
       companyId: companyId ? new mongoose.Types.ObjectId(companyId) : undefined
     });
 
