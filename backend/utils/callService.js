@@ -1,75 +1,60 @@
 const twilio = require('twilio');
+require('dotenv').config();
 
 // ===============================
 // TWILIO CONFIG
 // ===============================
 
 const client = twilio(
-  'ACd5becb860669372f09140da645ab4193',
-  '67959f3e781c251ed0027c0f5d78a33d'
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
 );
+
+const TWILIO_NUMBER = process.env.TWILIO_PHONE_NUMBER;
+
+// ===============================
+// FORMAT PHONE NUMBER (SAFE)
+// ===============================
+
+const formatPhone = (phone) => {
+  let cleanPhone = phone.replace(/\D/g, '');
+
+  // India 10-digit fallback
+  if (cleanPhone.length === 10) {
+    cleanPhone = '91' + cleanPhone;
+  }
+
+  return `+${cleanPhone}`;
+};
 
 // ===============================
 // AUTO CALL FUNCTION
 // ===============================
 
-const makeAutoCall = async (
-  phone,
-  name
-) => {
-
+const makeAutoCall = async (phone, name) => {
   try {
+    const toNumber = formatPhone(phone);
 
-    let cleanPhone = phone.replace(/\D/g, '');
-
-    // If it's a 10-digit number, prepend 91 (India)
-    if (cleanPhone.length === 10) {
-      cleanPhone = '91' + cleanPhone;
-    }
-
-    const call =
-      await client.calls.create({
-
+    const call = await client.calls.create({
       twiml: `
 <Response>
-
-<Say voice="alice">
-
-Hello ${name}.
-
-Welcome to Velvorax.
-
-Your registration was successful.
-
-Our team will contact you shortly.
-
-</Say>
-
+  <Say voice="alice">
+    Hello ${name}.
+    Welcome to Velvorax.
+    Your registration was successful.
+    Our team will contact you shortly.
+  </Say>
 </Response>
-        `,
+      `,
+      to: toNumber,
+      from: TWILIO_NUMBER
+    });
 
-        // USER NUMBER
-        to: `+${cleanPhone}`,
-
-        // YOUR TWILIO NUMBER
-        from: '+19015573417'
-
-      });
-
-    console.log(
-      '✅ Call Success:',
-      call.sid
-    );
-
+    console.log('✅ Call Success:', call.sid);
     return true;
 
   } catch (err) {
-
-    console.log(
-      '❌ Call Error:',
-      err.message
-    );
-
+    console.log('❌ Call Error:', err.message);
     return false;
   }
 };
@@ -78,74 +63,43 @@ Our team will contact you shortly.
 // REGISTRATION CALL
 // ===============================
 
-const sendRegistrationCall =
-  async (user) => {
+const sendRegistrationCall = async (user) => {
+  if (!user?.phone || !user?.name) {
+    console.log('❌ Missing user data for registration call');
+    return false;
+  }
 
-  return await makeAutoCall(
-    user.phone,
-    user.name
-  );
+  return await makeAutoCall(user.phone, user.name);
 };
 
 // ===============================
 // APPROVAL CALL
 // ===============================
 
-const sendApprovalCall =
-  async (user) => {
-
+const sendApprovalCall = async (user) => {
   try {
+    const toNumber = formatPhone(user.phone);
 
-    let cleanPhone = user.phone.replace(/\D/g, '');
-
-    // If it's a 10-digit number, prepend 91 (India)
-    if (cleanPhone.length === 10) {
-      cleanPhone = '91' + cleanPhone;
-    }
-
-    const call =
-      await client.calls.create({
-
+    const call = await client.calls.create({
       twiml: `
 <Response>
-
-<Say voice="alice">
-
-Hello ${user.name}.
-
-Congratulations.
-
-Your Velvorax account
-has been approved.
-
-You can now login
-and access your dashboard.
-
-</Say>
-
+  <Say voice="alice">
+    Hello ${user.name}.
+    Congratulations.
+    Your Velvorax account has been approved.
+    You can now login and access your dashboard.
+  </Say>
 </Response>
-        `,
+      `,
+      to: toNumber,
+      from: TWILIO_NUMBER
+    });
 
-        to: `+${cleanPhone}`,
-
-        from: '+19015573417'
-
-      });
-
-    console.log(
-      '✅ Approval Call Success:',
-      call.sid
-    );
-
+    console.log('✅ Approval Call Success:', call.sid);
     return true;
 
   } catch (err) {
-
-    console.log(
-      '❌ Approval Call Error:',
-      err.message
-    );
-
+    console.log('❌ Approval Call Error:', err.message);
     return false;
   }
 };
