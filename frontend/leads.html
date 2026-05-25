@@ -853,7 +853,8 @@ function renderTable() {
       </td>
 
       <td class="py-4 text-yellow-500 font-bold text-xs">
-${lead.assignedTo?.name || lead.createdBy?.name || 'Unassigned'}      </td>
+        ${lead.assignedTo ? lead.assignedTo.name : '<span class="text-gray-600 italic">Unassigned</span>'}
+      </td>
 
       <td class="py-4 text-gray-500 text-xs">
         ${lead.followUpDate

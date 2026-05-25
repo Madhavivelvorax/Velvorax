@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Company = require('../models/Company');
 const auth = require('../middleware/auth');
 const { sendApprovalNotification } = require('../utils/emailService');
+const { sendApprovalWhatsApp } = require('../utils/whatsappService');
 
 // Protect all routes - Super Admin only
 router.use(auth);
@@ -116,6 +117,11 @@ router.patch('/clients/:id/status', async (req, res) => {
             sendApprovalNotification(user.email, user.name, status).catch(err =>
                 console.error('Email status update error:', err.message)
             );
+
+            // Send WhatsApp notification
+            sendApprovalWhatsApp({ name: user.name, phone: user.phone }, status).catch(err =>
+                console.error('WhatsApp status update error:', err.message)
+            );
         }
 
         res.json({ msg: `Client account ${status}` });
@@ -137,8 +143,14 @@ router.patch('/users/:id/status', async (req, res) => {
 
         if (user && (status === 'approved' || status === 'rejected')) {
             const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
+
             sendApprovalNotification(user.email, user.name, displayStatus).catch(err =>
                 console.error('Email status update error:', err.message)
+            );
+
+            // Send WhatsApp notification
+            sendApprovalWhatsApp({ name: user.name, phone: user.phone }, displayStatus).catch(err =>
+                console.error('WhatsApp status update error:', err.message)
             );
         }
 

@@ -121,6 +121,33 @@ app.use((err, req, res, next) => {
   res.status(500).json({ msg: 'Internal Server Error', error: err.message });
 });
 
-app.listen(PORT, () => {
+//const {
+//  sendWhatsAppMessage
+//} = require('./utils/whatsappService');
+//
+//sendWhatsAppMessage(
+//  '918523012678',
+//  'Velvorax WhatsApp Working Successfully'
+//);
+
+const {
+  makeAutoCall
+} = require('./utils/callService');
+
+makeAutoCall(
+  '918523012678',
+//  '919985201116',
+
+  'Madhavi'
+);
+
+
+app.listen(PORT, async () => {
+
     console.log(`Server running on port ${PORT}`);
+
+
 });
+
+
+
